@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:172.20.4.69)",
+      "Bash(start \"c:/Users/pchimba/Documents/Asistencia/reporte.html\")",
+      "Bash(python -m venv venv)",
+      "Bash(venv/Scripts/pip install:*)",
+      "Bash(start \"\" http://localhost:5000)",
+      "Bash(venv/Scripts/python backend/app.py)",
+      "Bash(curl -s http://localhost:5000/api/me)",
+      "Bash(npm install:*)",
+      "Bash(cmd.exe /c \"where npm 2>&1\")",
+      "Bash(cmd.exe /c \"where node && where npm\")",
+      "Bash(cmd.exe /c \"node --version 2>&1 & npm --version 2>&1\")",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Users/pchimba/AppData/Roaming/**)",
+      "Bash(powershell.exe -Command \"winget install OpenJS.NodeJS.LTS --accept-source-agreements --accept-package-agreements\")",
+      "Bash(powershell.exe -Command \"Get-Command node | Select-Object -ExpandProperty Source\")",
+      "Bash(powershell.exe -Command 'Get-ChildItem -Path '\\\\''C:\\\\Program Files\\\\nodejs\\\\'\\\\'' -ErrorAction SilentlyContinue | Select-Object Name; Get-ChildItem -Path $env:APPDATA\\\\npm -ErrorAction SilentlyContinue | Select-Object Name')",
+      "Bash(\"/c/Program Files/nodejs/npm.cmd\" install)",
+      "Bash(powershell.exe -Command \"[System.Environment]::SetEnvironmentVariable\\('PATH', [System.Environment]::GetEnvironmentVariable\\('PATH','Machine'\\) + ';C:\\\\Program Files\\\\nodejs\\\\', 'Machine'\\)\")",
+      "Bash(powershell.exe -Command \"[System.Environment]::SetEnvironmentVariable\\('PATH', [System.Environment]::GetEnvironmentVariable\\('PATH','User'\\) + ';C:\\\\Program Files\\\\nodejs\\\\', 'User'\\)\")",
+      "Bash(rm -rf node_modules)",
+      "Bash('/c/Program Files/nodejs/npm.cmd' install)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(start \"\" http://localhost:5173)",
+      "Bash(start \"Backend FastAPI\" cmd /k \"backend\\\\venv\\\\Scripts\\\\activate && cd backend && uvicorn app:app --reload --port 8000\")",
+      "Bash(curl -s http://localhost:8000/api/me)",
+      "Bash('/c/Program Files/nodejs/npm.cmd' run dev)",
+      "Bash(curl -s -X POST http://localhost:8000/api/login -H \"Content-Type: application/json\" -d \"{\\\\\"email\\\\\":\\\\\"pchimba@provefrut.com\\\\\",\\\\\"password\\\\\":\\\\\"Provefrut2024\\\\\"}\")",
+      "Bash(curl -s -X POST http://localhost:5173/api/login -H \"Content-Type: application/json\" -d \"{\\\\\"email\\\\\":\\\\\"pchimba@provefrut.com\\\\\",\\\\\"password\\\\\":\\\\\"Provefrut2024\\\\\"}\")",
+      "Bash(curl -s -X POST http://localhost:8000/api/login -H \"Content-Type: application/json\" -d \"{\\\\\"email\\\\\":\\\\\"pchimba@provefrut.com\\\\\",\\\\\"password\\\\\":\\\\\"Provefrut2024\\\\\"}\" -v)",
+      "Bash(../backend/venv/Scripts/uvicorn app:app --port 8001)",
+      "Bash(powershell.exe -Command \"Get-Process -Id \\(Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue\\).OwningProcess -ErrorAction SilentlyContinue | Select-Object Id, ProcessName\")",
+      "Bash(powershell.exe -Command \"Stop-Process -Id 23732 -Force\")",
+      "Bash(start \"Backend FastAPI\" cmd /k \"..\\\\backend\\\\venv\\\\Scripts\\\\activate && uvicorn app:app --reload --port 8000\")",
+      "Bash(../backend/venv/Scripts/uvicorn app:app --port 8000)"
+    ]
+  }
+}

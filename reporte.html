@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reporte de Asistencia</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f0f4f8;
+      color: #1e293b;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #bf20d7 0%, #b62bd8 100%);
+      color: #fff;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    header svg { flex-shrink: 0; }
+    header h1 { font-size: 1.4rem; font-weight: 700; }
+    header p  { font-size: .85rem; opacity: .85; margin-top: 2px; }
+
+    /* ── Login card ── */
+    #login-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: calc(100vh - 80px);
+      padding: 24px;
+    }
+    .login-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.1);
+      text-align: center;
+    }
+    .login-card .icon {
+      width: 64px; height: 64px;
+      background: #eff6ff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .login-card h2 { font-size: 1.3rem; margin-bottom: 6px; }
+    .login-card .subtitle { font-size: .9rem; color: #64748b; margin-bottom: 28px; }
+    .form-group { margin-bottom: 16px; text-align: left; }
+    .form-group label {
+      display: block;
+      font-size: .85rem; font-weight: 600;
+      color: #374151; margin-bottom: 6px;
+    }
+    .input-wrap { position: relative; }
+    .input-wrap svg {
+      position: absolute; left: 12px; top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none; color: #94a3b8;
+    }
+    .form-group input {
+      width: 100%; padding: 11px 14px 11px 38px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px; font-size: .95rem;
+      outline: none; transition: border-color .2s;
+      background: #fff;
+    }
+    .form-group input:focus { border-color: #bd30eb; box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+    .btn-primary {
+      margin-top: 8px; width: 100%;
+      padding: 12px; border: none; border-radius: 8px;
+      background: #aa0fcd; color: #fff;
+      font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn-primary:hover { background: #b017ec; }
+    #login-error {
+      margin-top: 14px; padding: 10px 14px;
+      background: #fef2f2; border: 1px solid #fecaca;
+      border-radius: 8px; color: #dc2626;
+      font-size: .85rem; display: none;
+    }
+
+    /* ── Report section ── */
+    #report-section { display: none; padding: 28px 32px; }
+
+    /* Info bar */
+    .info-bar {
+      display: flex; flex-wrap: wrap; gap: 16px;
+      align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .info-bar .left { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .user-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #1e40af; color: #fff;
+      border-radius: 999px; padding: 6px 16px;
+      font-size: .85rem; font-weight: 600;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #fff; border: 1px solid #e2e8f0;
+      border-radius: 999px; padding: 6px 14px;
+      font-size: .82rem; font-weight: 600; color: #374151;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    .badge .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+
+    #btn-logout {
+      padding: 8px 18px; border: 1.5px solid #d1d5db;
+      border-radius: 8px; background: #fff;
+      font-size: .85rem; font-weight: 600;
+      color: #374151; cursor: pointer; transition: background .2s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    #btn-logout:hover { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+
+    /* ── Tabs (multi-grupo) ── */
+    .tabs {
+      display: flex; gap: 4px;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 24px;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      border: none; background: none;
+      font-size: .9rem; font-weight: 600;
+      color: #64748b; cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color .2s, border-color .2s;
+      text-transform: capitalize;
+    }
+    .tab-btn:hover { color: #2563eb; }
+    .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
+
+    /* Stats row */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px; margin-bottom: 28px;
+    }
+    .stat-card {
+      background: #fff; border-radius: 12px;
+      padding: 15px 17px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      border-left: 4px solid #3b82f6;
+    }
+    .stat-card.green  { border-left-color: #22c55e; }
+    .stat-card.orange { border-left-color: #f97316; }
+    .stat-card.red    { border-left-color: #ef4444; }
+    .stat-card .label { font-size: .78rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    .stat-card .value { font-size: 1.8rem; font-weight: 700; margin-top: 4px; }
+
+    /* Table */
+    .table-wrap {
+      background: #fff; border-radius: 14px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.08);
+      overflow: hidden;
+    }
+    .table-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .table-header h3 { font-size: 1rem; font-weight: 700; }
+    .search-input {
+      padding: 8px 12px; border: 1.5px solid #e2e8f0;
+      border-radius: 8px; font-size: .875rem; outline: none;
+      transition: border-color .2s; width: 220px;
+    }
+    .search-input:focus { border-color: #3b82f6; }
+
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    thead th {
+      background: #f8fafc; padding: 12px 16px;
+      text-align: left; font-weight: 700; color: #374151;
+      border-bottom: 1px solid #e2e8f0; white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+    tbody td { padding: 12px 16px; }
+
+    .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .78rem; font-weight: 600; }
+    .pill-green  { background: #dcfce7; color: #15803d; }
+    .pill-red    { background: #fee2e2; color: #dc2626; }
+    .pill-orange { background: #ffedd5; color: #c2410c; }
+
+    .empty { text-align: center; padding: 48px 20px; color: #94a3b8; }
+
+    /* Loading */
+    #loading-overlay {
+      position: fixed; inset: 0;
+      background: rgba(255,255,255,.85);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 14px; z-index: 999;
+    }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 4px solid #e2e8f0; border-top-color: #3b82f6;
+      border-radius: 50%; animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Pagination */
+    .pagination {
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: 8px; padding: 14px 20px;
+      border-top: 1px solid #f1f5f9;
+      font-size: .85rem; color: #64748b;
+    }
+    .pagination button {
+      padding: 5px 12px; border: 1.5px solid #e2e8f0;
+      border-radius: 6px; background: #fff;
+      cursor: pointer; font-size: .82rem; transition: background .15s;
+    }
+    .pagination button:disabled { opacity: .4; cursor: default; }
+    .pagination button:not(:disabled):hover { background: #f1f5f9; }
+
+    /* ── Admin badge ── */
+    .admin-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #7c3aed; color: #fff;
+      border-radius: 999px; padding: 4px 12px;
+      font-size: .75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+
+    /* ── Filtro admin ── */
+    #admin-filter-bar {
+      display: none;
+      align-items: center; gap: 12px;
+      background: #fff; border-radius: 12px;
+      padding: 14px 20px; margin-bottom: 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      flex-wrap: wrap;
+    }
+    #admin-filter-bar label {
+      font-size: .85rem; font-weight: 700; color: #374151;
+      white-space: nowrap;
+    }
+    #filtro-grupo {
+      padding: 8px 36px 8px 14px;
+      border: 1.5px solid #d1d5db; border-radius: 8px;
+      font-size: .9rem; color: #1e293b;
+      background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 10px center;
+      appearance: none; outline: none;
+      cursor: pointer; min-width: 220px;
+      transition: border-color .2s;
+    }
+    #filtro-grupo:focus { border-color: #3b82f6; }
+    #admin-filter-bar .filter-count {
+      font-size: .82rem; color: #64748b;
+      background: #f1f5f9; border-radius: 999px;
+      padding: 4px 12px; font-weight: 600;
+    }
+
+    @media (max-width: 640px) {
+      #report-section { padding: 16px; }
+      table { font-size: .8rem; }
+      tbody td, thead th { padding: 10px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading-overlay" style="display:none;">
+  <div class="spinner"></div>
+  <span style="color:#475569;font-weight:600;">Cargando datos...</span>
+</div>
+
+<!-- Header -->
+<header>
+  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+    <line x1="16" y1="2" x2="16" y2="6"></line>
+    <line x1="8" y1="2" x2="8" y2="6"></line>
+    <line x1="3" y1="10" x2="21" y2="10"></line>
+  </svg>
+  <div>
+    <h1>Reporte de Asistencia</h1>
+    <p id="header-date"></p>
+  </div>
+</header>
+
+<!-- Login -->
+<section id="login-section">
+  <div class="login-card">
+    <div class="icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+    </div>
+    <h2>Iniciar Sesión</h2>
+    <p class="subtitle">Ingresa tus credenciales para acceder al reporte de tu grupo</p>
+
+    <div class="form-group">
+      <label for="input-email">Correo electrónico</label>
+      <div class="input-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+        <input type="email" id="input-email" placeholder="usuario@nintanga.com.ec" autocomplete="username" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="input-password">Contraseña</label>
+      <div class="input-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <input type="password" id="input-password" placeholder="***********" autocomplete="current-password" />
+      </div>
+    </div>
+
+    <button class="btn-primary" id="btn-login">Ingresar</button>
+    <div id="login-error"></div>
+  </div>
+</section>
+
+<!-- Report -->
+<section id="report-section">
+  <div class="info-bar">
+    <div class="left">
+      <span class="user-chip">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span id="info-usuario"></span>
+      </span>
+      <span class="badge"><span class="dot"></span><span id="info-fecha"></span></span>
+      <span class="admin-chip" id="admin-badge" style="display:none;">Administrador</span>
+    </div>
+    <button id="btn-logout">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+      </svg>
+      Cerrar sesión
+    </button>
+  </div>
+
+  <!-- Tabs (visibles solo si hay más de un grupo) -->
+  <div class="tabs" id="tabs-container"></div>
+
+  <!-- Filtro por grupo (solo admin) -->
+  <div id="admin-filter-bar">
+    <label for="filtro-grupo">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+      </svg>
+      Filtrar por grupo:
+    </label>
+    <select id="filtro-grupo">
+      <option value="">— Todos los Grupos —</option>
+    </select>
+    <span class="filter-count" id="filter-count"></span>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="label">Total empleados</div>
+      <div class="value" id="stat-total">0</div>
+    </div>
+    <div class="stat-card green">
+      <div class="label">Con ingreso</div>
+      <div class="value" id="stat-ingreso">0</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="label">Sin salida</div>
+      <div class="value" id="stat-sin-salida">0</div>
+    </div>
+    <div class="stat-card red">
+      <div class="label">Sin registro</div>
+      <div class="value" id="stat-sin-registro">0</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <h3 id="table-title">Registros del grupo</h3>
+      <input class="search-input" id="search-input" type="text" placeholder="Buscar empleado..." />
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Ingreso</th>
+            <th>Salida</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-body"></tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span id="pag-info"></span>
+      <button id="btn-prev">← Ant.</button>
+      <button id="btn-next">Sig. →</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  // ═══════════════════════════════════════════════════════
+  //  CONFIGURACIÓN DE USUARIOS Y GRUPOS
+  //  - grupos: palabras clave que se comparan contra los
+  //    campos "grupo" y "nombre" de la API (sin importar
+  //    mayúsculas/minúsculas).
+  // ═══════════════════════════════════════════════════════
+  const USERS = {
+    'luis.toctaguano@nintanga.com.ec': {
+      password: 'Nintanga2024',
+      nombre:   'Luis Toctaguano',
+      grupos:   ['cosecha', 'chantilin'],
+      isAdmin:  false
+    },
+    'nelson.garcia@nintanga.com.ec': {
+      password: 'Nintanga2024',
+      nombre:   'Nelson García',
+      grupos:   ['san alfonso'],
+      isAdmin:  false
+    },
+    'jhonatan.curicho@nintanga.com.ec': {
+      password: 'Nintanga2024',
+      nombre:   'Jhonatan Curicho',
+      grupos:   ['san sebastian'],
+      isAdmin:  false
+    },
+    'milton.quimbiamba@nintanga.com.ec': {
+      password: 'Nintanga2024',
+      nombre:   'Milton Quimbiamba',
+      grupos:   ['san felipe'],
+      isAdmin:  false
+    },
+    'pchimba@provefrut.com': {
+      password: 'Provefrut2024',
+      nombre:   'Omar Chimba',
+      grupos:   [],
+      isAdmin:  true
+    },
+    'msangucho@provefrut.com': {
+      password: 'Provefrut2024',
+      nombre:   'Miguel Sangucho',
+      grupos:   [],
+      isAdmin:  true
+    }
+  };
+
+  const API_URL  = 'http://172.20.4.69:8000/api/cargar-asistencia/';
+  const PAGE_SIZE = 20;
+
+  let allData     = [];
+  let activeUser  = null;   // objeto USERS del usuario logueado
+  let groupData   = [];     // registros del grupo/tab activo
+  let filtered    = [];
+  let currentPage = 1;
+  let activeTab   = '';     // keyword del grupo activo
+
+  // ── Helpers ─────────────────────────────────────────────
+  const fmt = t => t ? t.substring(0, 5) : '—';
+  function formatDate(d) {
+    if (!d) return '';
+    const [y, m, day] = d.split('-');
+    return `${day}/${m}/${y}`;
+  }
+  function statusPill(i, s) {
+    if (!i) return '<span class="pill pill-red">Sin registro</span>';
+    if (!s) return '<span class="pill pill-orange">Trabajando</span>';
+    return '<span class="pill pill-green">Completo</span>';
+  }
+  const showLoading = v =>
+    document.getElementById('loading-overlay').style.display = v ? 'flex' : 'none';
+
+  function showError(msg) {
+    const el = document.getElementById('login-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  // ── Coincidencia de grupo ────────────────────────────────
+  // Busca la keyword en los campos "grupo" y "nombre" del registro
+  function matchesGroup(record, keyword) {
+    const kw = keyword.toLowerCase();
+    return record.grupo.toLowerCase().includes(kw) ||
+           record.nombre.toLowerCase().includes(kw);
+  }
+
+  // ── Fetch API ────────────────────────────────────────────
+  async function fetchData() {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error('Error al conectar con el servidor');
+    return res.json();
+  }
+
+  // ── Renderizar tabla ────────────────────────────────────
+  function renderTable() {
+    const tbody = document.getElementById('tabla-body');
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const page  = filtered.slice(start, start + PAGE_SIZE);
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty">No se encontraron registros</td></tr>`;
+      document.getElementById('pag-info').textContent = '';
+      document.getElementById('btn-prev').disabled = true;
+      document.getElementById('btn-next').disabled = true;
+      return;
+    }
+
+    tbody.innerHTML = page.map(r => `
+      <tr>
+        <td>${r.codigo}</td>
+        <td>${r.apellido_nombre}</td>
+        <td>${fmt(r.ingreso)}</td>
+        <td>${fmt(r.salida)}</td>
+        <td>${statusPill(r.ingreso, r.salida)}</td>
+      </tr>`).join('');
+
+    const total = filtered.length;
+    const pages = Math.ceil(total / PAGE_SIZE);
+    document.getElementById('pag-info').textContent =
+      `Pág. ${currentPage} de ${pages} (${total} registros)`;
+    document.getElementById('btn-prev').disabled = currentPage <= 1;
+    document.getElementById('btn-next').disabled = currentPage >= pages;
+  }
+
+  function updateStats(data) {
+    document.getElementById('stat-total').textContent        = data.length;
+    document.getElementById('stat-ingreso').textContent      = data.filter(r => r.ingreso).length;
+    document.getElementById('stat-sin-salida').textContent   = data.filter(r => r.ingreso && !r.salida).length;
+    document.getElementById('stat-sin-registro').textContent = data.filter(r => !r.ingreso).length;
+  }
+
+  // ── Activar tab/grupo ────────────────────────────────────
+  function activarGrupo(keyword) {
+    activeTab  = keyword;
+    groupData  = allData.filter(r => matchesGroup(r, keyword));
+    filtered   = [...groupData];
+    currentPage = 1;
+
+    // Resaltar tab activo
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.grupo === keyword);
+    });
+
+    // Título de la tabla
+    const sample = groupData[0];
+    const titulo = sample
+      ? `${sample.nombre} (${sample.grupo})`
+      : keyword.charAt(0).toUpperCase() + keyword.slice(1);
+    document.getElementById('table-title').textContent = `Registros — ${titulo}`;
+
+    // Fecha
+    document.getElementById('info-fecha').textContent =
+      groupData[0] ? formatDate(groupData[0].fecha) : '';
+
+    updateStats(groupData);
+    renderTable();
+
+    // Limpiar búsqueda
+    document.getElementById('search-input').value = '';
+  }
+
+  // ── Login ────────────────────────────────────────────────
+  async function login() {
+    const email = document.getElementById('input-email').value.trim().toLowerCase();
+    const pass  = document.getElementById('input-password').value;
+
+    document.getElementById('login-error').style.display = 'none';
+
+    if (!email || !pass) { showError('Completa todos los campos.'); return; }
+
+    const user = USERS[email];
+    if (!user)            { showError('Correo electrónico no autorizado.'); return; }
+    if (user.password !== pass) { showError('Contraseña incorrecta.'); return; }
+
+    showLoading(true);
+    try {
+      if (allData.length === 0) {
+        allData = await fetchData();
+      }
+
+      activeUser = user;
+
+      // Nombre del usuario en la info bar
+      document.getElementById('info-usuario').textContent = user.nombre;
+
+      // Badge admin
+      document.getElementById('admin-badge').style.display = user.isAdmin ? 'inline-flex' : 'none';
+
+      const tabsEl        = document.getElementById('tabs-container');
+      const adminFilterEl = document.getElementById('admin-filter-bar');
+
+      tabsEl.innerHTML = '';
+
+      if (user.isAdmin) {
+        // ── Vista administrador ──────────────────────────────
+        tabsEl.style.display        = 'none';
+        adminFilterEl.style.display = 'flex';
+
+        // Poblar dropdown con grupos únicos (ordenados)
+        const gruposUnicos = [...new Set(allData.map(r => r.grupo))].sort();
+        const select = document.getElementById('filtro-grupo');
+        select.innerHTML = '<option value="">— Todos los grupos —</option>';
+        gruposUnicos.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g;
+          opt.textContent = g;
+          select.appendChild(opt);
+        });
+
+        // Mostrar todos al inicio
+        activarAdmin('');
+      } else {
+        // ── Vista usuario normal ─────────────────────────────
+        adminFilterEl.style.display = 'none';
+
+        if (user.grupos.length > 1) {
+          tabsEl.style.display = 'flex';
+          user.grupos.forEach(g => {
+            const btn = document.createElement('button');
+            btn.className = 'tab-btn';
+            btn.textContent = g.charAt(0).toUpperCase() + g.slice(1);
+            btn.dataset.grupo = g;
+            btn.addEventListener('click', () => activarGrupo(g));
+            tabsEl.appendChild(btn);
+          });
+        } else {
+          tabsEl.style.display = 'none';
+        }
+
+        activarGrupo(user.grupos[0]);
+      }
+
+      document.getElementById('login-section').style.display  = 'none';
+      document.getElementById('report-section').style.display = 'block';
+
+    } catch (e) {
+      showError('No se pudo conectar con el servidor. Verifica tu conexión a la red.');
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  // ── Vista admin: activar filtro de grupo ─────────────────
+  function activarAdmin(grupoSeleccionado) {
+    groupData = grupoSeleccionado
+      ? allData.filter(r => r.grupo === grupoSeleccionado)
+      : [...allData];
+    filtered    = [...groupData];
+    currentPage = 1;
+
+    // Título
+    const titulo = grupoSeleccionado
+      ? `Registros — ${grupoSeleccionado}`
+      : 'Registros — Todos los grupos';
+    document.getElementById('table-title').textContent = titulo;
+
+    // Fecha (del primer registro)
+    document.getElementById('info-fecha').textContent =
+      groupData[0] ? formatDate(groupData[0].fecha) : '';
+
+    // Contador en el filtro
+    document.getElementById('filter-count').textContent =
+      `${groupData.length} registros`;
+
+    document.getElementById('search-input').value = '';
+    updateStats(groupData);
+    renderTable();
+  }
+
+  document.getElementById('filtro-grupo').addEventListener('change', function () {
+    activarAdmin(this.value);
+  });
+
+  // ── Búsqueda ─────────────────────────────────────────────
+  document.getElementById('search-input').addEventListener('input', function () {
+    const q = this.value.toLowerCase();
+    filtered = q
+      ? groupData.filter(r =>
+          r.apellido_nombre.toLowerCase().includes(q) ||
+          String(r.codigo).includes(q))
+      : [...groupData];
+    currentPage = 1;
+    renderTable();
+  });
+
+  // ── Paginación ───────────────────────────────────────────
+  document.getElementById('btn-prev').addEventListener('click', () => { currentPage--; renderTable(); });
+  document.getElementById('btn-next').addEventListener('click', () => { currentPage++; renderTable(); });
+
+  // ── Logout ───────────────────────────────────────────────
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    activeUser  = null;
+    allData     = [];
+    groupData   = [];
+    filtered    = [];
+    document.getElementById('input-email').value    = '';
+    document.getElementById('input-password').value = '';
+    document.getElementById('search-input').value   = '';
+    document.getElementById('filtro-grupo').value   = '';
+    document.getElementById('admin-filter-bar').style.display = 'none';
+    document.getElementById('admin-badge').style.display      = 'none';
+    document.getElementById('report-section').style.display   = 'none';
+    document.getElementById('login-section').style.display    = 'flex';
+  });
+
+  // ── Enter en login ───────────────────────────────────────
+  ['input-email','input-password'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') login();
+    });
+  });
+  document.getElementById('btn-login').addEventListener('click', login);
+
+  // ── Fecha en header ──────────────────────────────────────
+  document.getElementById('header-date').textContent =
+    new Date().toLocaleDateString('es-EC', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+</script>
+</body>
+</html>
