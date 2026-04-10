@@ -16,7 +16,7 @@ export default function Login({ onLogin }) {
     try {
       const data = await loginApi(email.trim().toLowerCase(), password)
       localStorage.setItem('token', data.token)
-      onLogin({ nombre: data.nombre, is_admin: data.is_admin, grupos: data.grupos })
+      onLogin({ nombre: data.nombre, is_admin: data.is_admin, grupos: data.grupos, grupoLabels: data.grupoLabels })
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al conectar con el servidor.')
     } finally {

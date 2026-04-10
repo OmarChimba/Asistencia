@@ -1,4 +1,4 @@
-const PAGE_SIZE = 20
+const PAGE_SIZE = 50
 
 function StatusPill({ ingreso, salida }) {
   if (!ingreso) return <span className="pill pill-red">Sin registro</span>
@@ -33,13 +33,12 @@ export default function AttendanceTable({ title, data, search, onSearch, page, o
               <th>Nombre</th>
               <th>Ingreso</th>
               <th>Salida</th>
-              <th>Estado</th>
             </tr>
           </thead>
           <tbody>
             {pageData.length === 0 ? (
               <tr>
-                <td colSpan={5} className="empty">No se encontraron registros</td>
+                <td colSpan={4} className="empty">No se encontraron registros</td>
               </tr>
             ) : (
               pageData.map((r, i) => (
@@ -48,7 +47,6 @@ export default function AttendanceTable({ title, data, search, onSearch, page, o
                   <td>{r.apellido_nombre}</td>
                   <td>{fmt(r.ingreso)}</td>
                   <td>{fmt(r.salida)}</td>
-                  <td><StatusPill ingreso={r.ingreso} salida={r.salida} /></td>
                 </tr>
               ))
             )}

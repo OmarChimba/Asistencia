@@ -24,7 +24,7 @@ cd ..
 echo Iniciando servidores...
 
 start "Backend FastAPI - Puerto 8000" cmd /k "cd /d %~dp0 && backend\venv\Scripts\activate && uvicorn backend.app:app --reload --host 0.0.0.0 --port 8000"
-start "Frontend Vite React - Puerto 5173" cmd /k "cd /d %~dp0\frontend && npm run dev -- --host 0.0.0.0"
+start "Frontend Vite React - Puerto 5173" cmd /k "cd /d %~dp0\frontend && npm run dev"
 
 :: ── Abrir navegador ─────────────────────────────────────────
 echo Esperando que los servidores inicien...

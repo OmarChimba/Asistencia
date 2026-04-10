@@ -1,4 +1,7 @@
 export default function GroupFilter({ user, allGrupos, activeGroup, onGroupChange, viewCount }) {
+  const labels = user.grupoLabels || {}
+  const label = (code) => labels[code] || code
+
   // Administrador: dropdown con todos los grupos
   if (user.is_admin) {
     return (
@@ -17,7 +20,7 @@ export default function GroupFilter({ user, allGrupos, activeGroup, onGroupChang
         >
           <option value="">— Todos los Grupos —</option>
           {allGrupos.map(g => (
-            <option key={g} value={g}>{g}</option>
+            <option key={g} value={g}>{label(g)}</option>
           ))}
         </select>
         <span className="filter-count">{viewCount} registros</span>
@@ -37,7 +40,7 @@ export default function GroupFilter({ user, allGrupos, activeGroup, onGroupChang
           className={`tab-btn ${activeGroup === g ? 'active' : ''}`}
           onClick={() => onGroupChange(g)}
         >
-          {g.charAt(0).toUpperCase() + g.slice(1)}
+          {label(g)}
         </button>
       ))}
     </div>

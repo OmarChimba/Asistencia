@@ -38,11 +38,7 @@ export default function Dashboard({ user, onLogout }) {
         : allData
     }
     if (!activeGroup) return allData
-    const kw = activeGroup.toLowerCase()
-    return allData.filter(r =>
-      r.grupo.toLowerCase().includes(kw) ||
-      r.nombre.toLowerCase().includes(kw)
-    )
+    return allData.filter(r => r._tab === activeGroup)
   }, [allData, activeGroup, user.is_admin])
 
   // Búsqueda sobre viewData

@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 import requests as http_client
 
-from config import API_ASISTENCIA_URL, SECRET_KEY, USERS
+from config import API_ASISTENCIA_URL, SECRET_KEY, USERS, GRUPO_LABELS
 
 app = FastAPI(title="Reporte de Asistencia")
 
@@ -53,10 +53,13 @@ async def get_current_user(
 
 # ── Helpers ──────────────────────────────────────────────────
 
-def matches_group(record: dict, keywords: list[str]) -> bool:
-    grupo  = record.get("grupo",  "").lower()
-    nombre = record.get("nombre", "").lower()
-    return any(kw.lower() in grupo or kw.lower() in nombre for kw in keywords)
+def get_tab(record: dict, keywords: list[str]) -> str | None:
+    """Devuelve el keyword que corresponde al registro usando el código exacto de grupo."""
+    grupo = record.get("grupo", "").strip().upper()
+    for kw in keywords:
+        if kw.strip().upper() == grupo:
+            return kw
+    return None
 
 def fetch_asistencia() -> list[dict]:
     resp = http_client.get(API_ASISTENCIA_URL, timeout=10)
@@ -80,18 +83,20 @@ def login(body: LoginRequest):
     if not user or user["password"] != body.password:
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
     return {
-        "token":    create_token(email),
-        "nombre":   user["nombre"],
-        "is_admin": user["is_admin"],
-        "grupos":   user["grupos"],
+        "token":        create_token(email),
+        "nombre":       user["nombre"],
+        "is_admin":     user["is_admin"],
+        "grupos":       user["grupos"],
+        "grupoLabels":  GRUPO_LABELS,
     }
 
 @app.get("/api/me")
 def me(current_user: dict = Depends(get_current_user)):
     return {
-        "nombre":   current_user["nombre"],
-        "is_admin": current_user["is_admin"],
-        "grupos":   current_user["grupos"],
+        "nombre":       current_user["nombre"],
+        "is_admin":     current_user["is_admin"],
+        "grupos":       current_user["grupos"],
+        "grupoLabels":  GRUPO_LABELS,
     }
 
 @app.get("/api/asistencia")
@@ -108,8 +113,52 @@ def asistencia(current_user: dict = Depends(get_current_user)):
     if current_user["is_admin"]:
         return data
 
-    grupos   = current_user["grupos"]
-    return [r for r in data if matches_group(r, grupos)]
+    grupos = current_user["grupos"]
+    result = []
+    for r in data:
+        tab = get_tab(r, grupos)
+        if tab:
+            result.append({**r, "_tab": tab})
+    return result
+
+
+@app.get("/api/debug/mi-data")
+def debug_mi_data(current_user: dict = Depends(get_current_user)):
+    """Muestra los primeros 5 registros crudos de la API con el _tab asignado."""
+    try:
+        data = fetch_asistencia()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    grupos = current_user["grupos"]
+    sample = []
+    for r in data[:30]:
+        tab = get_tab(r, grupos) if not current_user["is_admin"] else "admin"
+        sample.append({
+            "grupo":  r.get("grupo"),
+            "nombre": r.get("nombre"),
+            "_tab":   tab,
+        })
+    return {"grupos_usuario": grupos, "muestra": sample}
+
+
+@app.get("/api/debug/grupos")
+def debug_grupos(current_user: dict = Depends(get_current_user)):
+    """Solo admin: muestra todos los valores únicos de 'grupo' y 'nombre' con su conteo."""
+    if not current_user["is_admin"]:
+        raise HTTPException(status_code=403, detail="Solo administradores")
+    try:
+        data = fetch_asistencia()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    from collections import Counter
+    grupos_count  = Counter(r.get("grupo",  "") for r in data)
+    nombres_count = Counter(r.get("nombre", "") for r in data)
+    return {
+        "total_registros": len(data),
+        "por_grupo":  dict(sorted(grupos_count.items())),
+        "por_nombre": dict(sorted(nombres_count.items())),
+    }
 
 
 # ── Entry point ──────────────────────────────────────────────
