@@ -6,7 +6,6 @@ Sincroniza marcaciones desde la API interna hacia DynamoDB.
 - Al cambiar de fecha: limpia la tabla y recarga
 """
 import os, time, hashlib, json, logging
-from collections import defaultdict
 import requests
 import boto3
 from dotenv import load_dotenv
@@ -76,14 +75,16 @@ def limpiar_tabla():
 
 
 def escribir_registros(registros: list[dict]):
-    contador  = defaultdict(int)
+    """
+    Clave: marcacion = str(codigo)
+    Si ya existe un registro con el mismo codigo → lo sobreescribe (upsert).
+    """
     insertados = 0
     errores    = 0
     with table.batch_writer() as batch:
         for r in registros:
-            codigo = r.get('codigo')
-            contador[codigo] += 1
-            marcacion = f"{codigo}_{contador[codigo]}"
+            codigo    = r.get('codigo')
+            marcacion = str(codigo)          # clave única por empleado
             try:
                 batch.put_item(Item={
                     'marcacion':       marcacion,
@@ -101,7 +102,7 @@ def escribir_registros(registros: list[dict]):
             except Exception as e:
                 log.error(f"  Error en {marcacion}: {e}")
                 errores += 1
-    log.info(f"  Escritos: {insertados} | Errores: {errores}")
+    log.info(f"  Escritos/actualizados: {insertados} | Errores: {errores}")
 
 
 # ── Ciclo principal ────────────────────────────────────────────
