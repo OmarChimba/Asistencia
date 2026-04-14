@@ -1,12 +1,20 @@
 # ══════════════════════════════════════════════════════════════
-#  Configuración del sistema
+#  Configuración del sistema  (valores leídos desde .env)
 # ══════════════════════════════════════════════════════════════
+import os
+from dotenv import load_dotenv
 
-# URL de la API de asistencia
-API_ASISTENCIA_URL = 'http://172.20.4.69:8000/api/cargar-asistencia/'
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
-# Clave secreta para las sesiones (cámbiala en producción)
-SECRET_KEY = 'nintanga-provefrut-2024-secretkey'
+SECRET_KEY      = os.getenv('SECRET_KEY',      'nintanga-provefrut-2024-secretkey')
+BACKEND_HOST    = os.getenv('BACKEND_HOST',    '0.0.0.0')
+BACKEND_PORT    = int(os.getenv('BACKEND_PORT', '8000'))
+
+# ── AWS DynamoDB ────────────────────────────────────────────
+AWS_ACCESS_KEY_ID     = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_REGION            = os.getenv('AWS_REGION',       'us-east-1')
+DYNAMODB_TABLE        = os.getenv('DYNAMODB_TABLE',   'Marcaciones')
 
 # ── Etiquetas legibles para los códigos de grupo ───────────
 GRUPO_LABELS = {

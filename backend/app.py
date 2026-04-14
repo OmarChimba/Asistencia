@@ -6,10 +6,13 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 from jose import jwt, JWTError
-import requests as http_client
+import boto3
+from botocore.exceptions import BotoCoreError, ClientError
 
-from config import API_ASISTENCIA_URL, SECRET_KEY, USERS, GRUPO_LABELS
+from config import SECRET_KEY, USERS, GRUPO_LABELS, \
+                   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, DYNAMODB_TABLE
 
 app = FastAPI(title="Reporte de Asistencia")
 
@@ -61,10 +64,36 @@ def get_tab(record: dict, keywords: list[str]) -> str | None:
             return kw
     return None
 
+_dynamodb = boto3.resource(
+    'dynamodb',
+    region_name=AWS_REGION,
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+)
+_table = _dynamodb.Table(DYNAMODB_TABLE)
+
+
 def fetch_asistencia() -> list[dict]:
-    resp = http_client.get(API_ASISTENCIA_URL, timeout=10)
-    resp.raise_for_status()
-    return resp.json()
+    """Lee todos los registros de DynamoDB y normaliza tipos."""
+    items  = []
+    scan   = _table.scan()
+    while True:
+        for item in scan.get('Items', []):
+            items.append({
+                'empresa':         int(item.get('empresa') or 0),
+                'grupo':           str(item.get('grupo',           '')),
+                'codigo':          int(item.get('codigo') or 0),
+                'nombre':          str(item.get('nombre',          '')),
+                'fecha':           str(item.get('fecha',           '')),
+                'cedula':          str(item.get('cedula',          '')),
+                'apellido_nombre': str(item.get('apellido_nombre', '')),
+                'ingreso':         str(item.get('ingreso') or ''),
+                'salida':          str(item.get('salida')  or '') or None,
+            })
+        if 'LastEvaluatedKey' not in scan:
+            break
+        scan = _table.scan(ExclusiveStartKey=scan['LastEvaluatedKey'])
+    return items
 
 
 # ── Modelos ──────────────────────────────────────────────────
@@ -103,10 +132,10 @@ def me(current_user: dict = Depends(get_current_user)):
 def asistencia(current_user: dict = Depends(get_current_user)):
     try:
         data = fetch_asistencia()
-    except http_client.exceptions.ConnectionError:
-        raise HTTPException(status_code=502, detail="No se puede conectar con el servidor de asistencia.")
-    except http_client.exceptions.Timeout:
-        raise HTTPException(status_code=504, detail="La API de asistencia no respondió a tiempo.")
+    except ClientError as e:
+        raise HTTPException(status_code=502, detail=f"Error DynamoDB: {e.response['Error']['Message']}")
+    except BotoCoreError as e:
+        raise HTTPException(status_code=502, detail=f"Error AWS: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -122,42 +151,19 @@ def asistencia(current_user: dict = Depends(get_current_user)):
     return result
 
 
-@app.get("/api/debug/mi-data")
-def debug_mi_data(current_user: dict = Depends(get_current_user)):
-    """Muestra los primeros 5 registros crudos de la API con el _tab asignado."""
-    try:
-        data = fetch_asistencia()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    grupos = current_user["grupos"]
-    sample = []
-    for r in data[:30]:
-        tab = get_tab(r, grupos) if not current_user["is_admin"] else "admin"
-        sample.append({
-            "grupo":  r.get("grupo"),
-            "nombre": r.get("nombre"),
-            "_tab":   tab,
-        })
-    return {"grupos_usuario": grupos, "muestra": sample}
-
-
 @app.get("/api/debug/grupos")
 def debug_grupos(current_user: dict = Depends(get_current_user)):
-    """Solo admin: muestra todos los valores únicos de 'grupo' y 'nombre' con su conteo."""
+    """Solo admin: muestra conteo de registros por grupo."""
     if not current_user["is_admin"]:
         raise HTTPException(status_code=403, detail="Solo administradores")
     try:
         data = fetch_asistencia()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
     from collections import Counter
-    grupos_count  = Counter(r.get("grupo",  "") for r in data)
-    nombres_count = Counter(r.get("nombre", "") for r in data)
     return {
         "total_registros": len(data),
-        "por_grupo":  dict(sorted(grupos_count.items())),
-        "por_nombre": dict(sorted(nombres_count.items())),
+        "por_grupo": dict(sorted(Counter(r.get("grupo", "") for r in data).items())),
     }
 
 
