@@ -1,25 +1,25 @@
 """
 Sincroniza marcaciones desde la API interna hacia DynamoDB.
-Clave: marcacion = {codigo}_{n}  (n = orden secuencial en el response)
-Limpieza: si la fecha del API es distinta a la almacenada → borra todo y recarga
+- Revisa la API cada POLL_SEGUNDOS (default 30)
+- Solo sincroniza si hay registros nuevos o actualizados
+- Clave: marcacion = {codigo}_{n}
+- Al cambiar de fecha: limpia la tabla y recarga
 """
-import os, time, logging
+import os, time, hashlib, json, logging
 from collections import defaultdict
-from datetime import datetime
 import requests
 import boto3
-from boto3.dynamodb.conditions import Attr
 from dotenv import load_dotenv
 
 load_dotenv()
 
 # ── Configuración ──────────────────────────────────────────────
-API_URL    = os.getenv('API_ASISTENCIA_URL')
-AWS_KEY    = os.getenv('AWS_ACCESS_KEY_ID')
-AWS_SECRET = os.getenv('AWS_SECRET_ACCESS_KEY')
-AWS_REGION = os.getenv('AWS_REGION', 'us-east-1')
-TABLE_NAME = os.getenv('DYNAMODB_TABLE', 'Marcaciones')
-INTERVALO  = int(os.getenv('INTERVALO_MINUTOS', '15'))
+API_URL      = os.getenv('API_ASISTENCIA_URL')
+AWS_KEY      = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET   = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_REGION   = os.getenv('AWS_REGION', 'us-east-1')
+TABLE_NAME   = os.getenv('DYNAMODB_TABLE', 'Marcaciones')
+POLL_SEG     = int(os.getenv('POLL_SEGUNDOS', '30'))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -45,22 +45,25 @@ def fetch_api() -> list[dict]:
     return resp.json()
 
 
+def calcular_hash(registros: list[dict]) -> str:
+    """Hash del contenido completo para detectar cualquier cambio."""
+    contenido = json.dumps(registros, sort_keys=True, default=str)
+    return hashlib.md5(contenido.encode()).hexdigest()
+
+
 def fecha_en_tabla() -> str | None:
-    """Devuelve la fecha del primer registro en la tabla, o None si está vacía."""
     resp = table.scan(Limit=1, ProjectionExpression='fecha')
     items = resp.get('Items', [])
     return items[0]['fecha'] if items else None
 
 
 def limpiar_tabla():
-    """Elimina todos los registros de la tabla en lotes de 25."""
-    log.info("Limpiando tabla...")
+    log.info("  Limpiando tabla (fecha nueva)...")
     eliminados = 0
     scan = table.scan(ProjectionExpression='marcacion')
     while True:
-        items = scan.get('Items', [])
         with table.batch_writer() as batch:
-            for item in items:
+            for item in scan['Items']:
                 batch.delete_item(Key={'marcacion': item['marcacion']})
                 eliminados += 1
         if 'LastEvaluatedKey' not in scan:
@@ -73,21 +76,14 @@ def limpiar_tabla():
 
 
 def escribir_registros(registros: list[dict]):
-    """
-    Escribe registros en DynamoDB.
-    Clave: {codigo}_{n} donde n es el orden de aparición por codigo.
-    """
-    contador = defaultdict(int)   # cuántas veces aparece cada codigo
+    contador  = defaultdict(int)
     insertados = 0
     errores    = 0
-
     with table.batch_writer() as batch:
         for r in registros:
             codigo = r.get('codigo')
             contador[codigo] += 1
-            n = contador[codigo]
-            marcacion = f"{codigo}_{n}"
-
+            marcacion = f"{codigo}_{contador[codigo]}"
             try:
                 batch.put_item(Item={
                     'marcacion':       marcacion,
@@ -105,51 +101,55 @@ def escribir_registros(registros: list[dict]):
             except Exception as e:
                 log.error(f"  Error en {marcacion}: {e}")
                 errores += 1
-
     log.info(f"  Escritos: {insertados} | Errores: {errores}")
 
 
 # ── Ciclo principal ────────────────────────────────────────────
-
-def sync():
-    log.info("─── Iniciando sincronización ───")
-
-    try:
-        registros = fetch_api()
-    except Exception as e:
-        log.error(f"Error al llamar la API: {e}")
-        return
-
-    if not registros:
-        log.warning("La API devolvió 0 registros.")
-        return
-
-    fecha_api   = registros[0].get('fecha', '')
-    fecha_tabla = fecha_en_tabla()
-
-    log.info(f"Fecha API: {fecha_api} | Fecha en tabla: {fecha_tabla or 'vacía'}")
-
-    # Si cambió la fecha → limpiar y recargar (datos de nuevo día)
-    if fecha_tabla and fecha_tabla != fecha_api:
-        log.info("Fecha cambió → limpiando tabla antes de escribir")
-        limpiar_tabla()
-
-    log.info(f"Escribiendo {len(registros)} registros...")
-    escribir_registros(registros)
-
 
 def main():
     log.info("══════════════════════════════════════════")
     log.info("  Servicio de sincronización de marcaciones")
     log.info(f"  API     : {API_URL}")
     log.info(f"  Tabla   : {TABLE_NAME} ({AWS_REGION})")
-    log.info(f"  Intervalo: cada {INTERVALO} minutos")
+    log.info(f"  Revisión: cada {POLL_SEG} segundos")
     log.info("══════════════════════════════════════════")
 
+    hash_anterior = None
+
     while True:
-        sync()
-        log.info(f"Próxima sync en {INTERVALO} minutos...")
-        time.sleep(INTERVALO * 60)
+        try:
+            registros = fetch_api()
+
+            if not registros:
+                log.warning("API devolvió 0 registros.")
+                time.sleep(POLL_SEG)
+                continue
+
+            hash_actual = calcular_hash(registros)
+
+            if hash_actual == hash_anterior:
+                log.debug("Sin cambios, esperando...")
+                time.sleep(POLL_SEG)
+                continue
+
+            # Hay cambios — sincronizar
+            fecha_api   = registros[0].get('fecha', '')
+            fecha_tabla = fecha_en_tabla()
+
+            log.info(f"Cambios detectados — {len(registros)} registros | fecha: {fecha_api}")
+
+            if fecha_tabla and fecha_tabla != fecha_api:
+                limpiar_tabla()
+
+            escribir_registros(registros)
+            hash_anterior = hash_actual
+
+        except requests.exceptions.RequestException as e:
+            log.error(f"Error de conexión con la API: {e}")
+        except Exception as e:
+            log.error(f"Error inesperado: {e}")
+
+        time.sleep(POLL_SEG)
 
 
 if __name__ == '__main__':
