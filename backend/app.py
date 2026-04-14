@@ -161,5 +161,5 @@ def debug_grupos(current_user: dict = Depends(get_current_user)):
     }
 
 
-# ── Entry point ──────────────────────────────────────────────
+# ── Entry ----------- point ──────────────────────────────────────────────
 
