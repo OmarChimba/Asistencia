@@ -11,4 +11,9 @@ frontend/.vite/
 
 # Editor
 .vscode/
-*.env
+
+# Variables de entorno (contienen secretos)
+backend/.env
+actualizacion-datos/.env
+.env.local
+.env.*.local

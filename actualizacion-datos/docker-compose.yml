@@ -1,0 +1,6 @@
+services:
+  sync-marcaciones:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    network_mode: host        # accede a 172.20.4.69 como si fuera la máquina host
