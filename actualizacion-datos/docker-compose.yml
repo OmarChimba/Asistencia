@@ -1,6 +1,12 @@
 services:
   sync-marcaciones:
     build: .
-    env_file: .env
     restart: unless-stopped
-    network_mode: host        # accede a 172.20.4.69 como si fuera la máquina host
+    network_mode: host
+    environment:
+      - API_ASISTENCIA_URL=${API_ASISTENCIA_URL}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - DYNAMODB_TABLE=${DYNAMODB_TABLE:-Marcaciones}
+      - INTERVALO_MINUTOS=${INTERVALO_MINUTOS:-15}
