@@ -16,5 +16,7 @@ frontend/.vite/
 backend/.env
 actualizacion-datos/.env
 Asistencia-app/.env.test
+lambda-deploy/package/
+lambda-deploy/lambda-function.zip
 .env.local
 .env.*.local

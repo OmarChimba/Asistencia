@@ -12,14 +12,15 @@ import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
 from config import SECRET_KEY, USERS, GRUPO_LABELS, \
-                   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, DYNAMODB_TABLE
+                   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, DYNAMODB_TABLE, \
+                   ALLOWED_ORIGINS
 
 app = FastAPI(title="Reporte de Asistencia")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"http://(localhost|127\.0\.0\.1|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(5173|4173|5174|5175)",
-    allow_credentials=True,
+    allow_origins=ALLOWED_ORIGINS if ALLOWED_ORIGINS else ["*"],
+    allow_credentials=bool(ALLOWED_ORIGINS),
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -167,5 +168,7 @@ def debug_grupos(current_user: dict = Depends(get_current_user)):
     }
 
 
-# ── Entry ----------- point ──────────────────────────────────────────────
+# ── Entry point ──────────────────────────────────────────────────────────
+from mangum import Mangum
+handler = Mangum(app, lifespan="off")
 

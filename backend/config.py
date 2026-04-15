@@ -16,6 +16,10 @@ AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 AWS_REGION            = os.getenv('AWS_REGION',       'us-east-1')
 DYNAMODB_TABLE        = os.getenv('DYNAMODB_TABLE',   'Marcaciones')
 
+# ── CORS ─────────────────────────────────────────────────────
+# En Lambda, setear ALLOWED_ORIGINS=https://tu-app.amplifyapp.com
+ALLOWED_ORIGINS = [o.strip() for o in os.getenv('ALLOWED_ORIGINS', '').split(',') if o.strip()]
+
 # ── Etiquetas legibles para los códigos de grupo ───────────
 GRUPO_LABELS = {
     'COSE':  'Cosecha',
