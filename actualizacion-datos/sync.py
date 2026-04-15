@@ -1,9 +1,9 @@
 """
 Sincroniza marcaciones desde la API interna hacia DynamoDB.
-- Revisa la API cada POLL_SEGUNDOS (default 30)
-- Solo sincroniza si hay registros nuevos o actualizados
-- Clave: marcacion = {codigo}_{n}
-- Al cambiar de fecha: limpia la tabla y recarga
+- Clave: marcacion = str(codigo)  — un registro por empleado
+- Solo mantiene registros de la fecha actual
+- Limpia la tabla si detecta claves con formato incorrecto o fecha distinta
+- Revisa cambios cada POLL_SEGUNDOS (default 30)
 """
 import os, time, hashlib, json, logging
 import requests
@@ -12,13 +12,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ── Configuración ──────────────────────────────────────────────
-API_URL      = os.getenv('API_ASISTENCIA_URL')
-AWS_KEY      = os.getenv('AWS_ACCESS_KEY_ID')
-AWS_SECRET   = os.getenv('AWS_SECRET_ACCESS_KEY')
-AWS_REGION   = os.getenv('AWS_REGION', 'us-east-1')
-TABLE_NAME   = os.getenv('DYNAMODB_TABLE', 'Marcaciones')
-POLL_SEG     = int(os.getenv('POLL_SEGUNDOS', '30'))
+API_URL    = os.getenv('API_ASISTENCIA_URL')
+AWS_KEY    = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_REGION = os.getenv('AWS_REGION',       'us-east-1')
+TABLE_NAME = os.getenv('DYNAMODB_TABLE',   'Marcaciones')
+POLL_SEG   = int(os.getenv('POLL_SEGUNDOS', '30'))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -45,19 +44,13 @@ def fetch_api() -> list[dict]:
 
 
 def calcular_hash(registros: list[dict]) -> str:
-    """Hash del contenido completo para detectar cualquier cambio."""
     contenido = json.dumps(registros, sort_keys=True, default=str)
     return hashlib.md5(contenido.encode()).hexdigest()
 
 
-def fecha_en_tabla() -> str | None:
-    resp = table.scan(Limit=1, ProjectionExpression='fecha')
-    items = resp.get('Items', [])
-    return items[0]['fecha'] if items else None
-
-
 def limpiar_tabla():
-    log.info("  Limpiando tabla (fecha nueva)...")
+    """Elimina TODOS los registros de la tabla."""
+    log.info("  Limpiando tabla...")
     eliminados = 0
     scan = table.scan(ProjectionExpression='marcacion')
     while True:
@@ -74,33 +67,55 @@ def limpiar_tabla():
     log.info(f"  Eliminados: {eliminados} registros")
 
 
+def tabla_necesita_limpieza(fecha_hoy: str) -> bool:
+    """
+    Retorna True si la tabla tiene:
+    - Registros de otra fecha
+    - Claves con formato incorrecto (contienen '_' o '#')
+    """
+    scan = table.scan(
+        ProjectionExpression='marcacion, fecha',
+        Limit=50,
+    )
+    items = scan.get('Items', [])
+    if not items:
+        return False
+    for item in items:
+        clave = str(item.get('marcacion', ''))
+        fecha = str(item.get('fecha', ''))
+        # Formato incorrecto: tiene _ o # (formatos viejos)
+        if '_' in clave or '#' in clave:
+            log.warning(f"  Clave con formato incorrecto: {clave}")
+            return True
+        # Fecha distinta a hoy
+        if fecha and fecha != fecha_hoy:
+            log.info(f"  Fecha en tabla ({fecha}) distinta a hoy ({fecha_hoy})")
+            return True
+    return False
+
+
 def escribir_registros(registros: list[dict]):
-    """
-    Clave: marcacion = str(codigo)
-    Si ya existe un registro con el mismo codigo → lo sobreescribe (upsert).
-    """
     insertados = 0
     errores    = 0
     with table.batch_writer() as batch:
         for r in registros:
-            codigo    = r.get('codigo')
-            marcacion = str(codigo)          # clave única por empleado
+            codigo = r.get('codigo')
             try:
                 batch.put_item(Item={
-                    'marcacion':       marcacion,
+                    'marcacion':       str(codigo),
                     'empresa':         r.get('empresa'),
-                    'grupo':           r.get('grupo', ''),
+                    'grupo':           r.get('grupo',           ''),
                     'codigo':          codigo,
-                    'nombre':          r.get('nombre', ''),
-                    'fecha':           r.get('fecha', ''),
-                    'cedula':          r.get('cedula', ''),
+                    'nombre':          r.get('nombre',          ''),
+                    'fecha':           r.get('fecha',           ''),
+                    'cedula':          r.get('cedula',          ''),
                     'apellido_nombre': r.get('apellido_nombre', ''),
                     'ingreso':         r.get('ingreso') or '',
                     'salida':          r.get('salida')  or '',
                 })
                 insertados += 1
             except Exception as e:
-                log.error(f"  Error en {marcacion}: {e}")
+                log.error(f"  Error en {codigo}: {e}")
                 errores += 1
     log.info(f"  Escritos/actualizados: {insertados} | Errores: {errores}")
 
@@ -126,22 +141,20 @@ def main():
                 time.sleep(POLL_SEG)
                 continue
 
+            fecha_hoy   = registros[0].get('fecha', '')
             hash_actual = calcular_hash(registros)
 
+            # Verificar si la tabla necesita limpieza (formato incorrecto o fecha vieja)
+            if tabla_necesita_limpieza(fecha_hoy):
+                log.info("Limpieza necesaria → borrando tabla y recargando")
+                limpiar_tabla()
+                hash_anterior = None   # forzar escritura
+
             if hash_actual == hash_anterior:
-                log.debug("Sin cambios, esperando...")
                 time.sleep(POLL_SEG)
                 continue
 
-            # Hay cambios — sincronizar
-            fecha_api   = registros[0].get('fecha', '')
-            fecha_tabla = fecha_en_tabla()
-
-            log.info(f"Cambios detectados — {len(registros)} registros | fecha: {fecha_api}")
-
-            if fecha_tabla and fecha_tabla != fecha_api:
-                limpiar_tabla()
-
+            log.info(f"Cambios detectados — {len(registros)} registros | fecha: {fecha_hoy}")
             escribir_registros(registros)
             hash_anterior = hash_actual
 
