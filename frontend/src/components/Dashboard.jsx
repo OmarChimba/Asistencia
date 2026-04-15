@@ -45,10 +45,12 @@ export default function Dashboard({ user, onLogout }) {
   const filtered = useMemo(() => {
     if (!search) return viewData
     const q = search.toLowerCase()
-    return viewData.filter(r =>
-      r.apellido_nombre.toLowerCase().includes(q) ||
-      String(r.codigo).includes(q)
-    )
+    return viewData
+      .filter(r =>
+        r.apellido_nombre.toLowerCase().includes(q) ||
+        String(r.codigo).includes(q)
+      )
+      .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
   }, [viewData, search])
 
   // Grupos únicos para el dropdown admin

@@ -1,0 +1,8 @@
+**/.env
+**/.env.*
+**/node_modules
+**/venv
+**/__pycache__
+**/*.pyc
+backend/test_aws.py
+actualizacion-datos/

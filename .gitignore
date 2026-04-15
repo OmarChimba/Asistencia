@@ -15,5 +15,6 @@ frontend/.vite/
 # Variables de entorno (contienen secretos)
 backend/.env
 actualizacion-datos/.env
+Asistencia-app/.env.test
 .env.local
 .env.*.local

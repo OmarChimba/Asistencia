@@ -1,0 +1,16 @@
+services:
+  asistencia-app:
+    build:
+      context: ..
+      dockerfile: Asistencia-app/Dockerfile
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - DYNAMODB_TABLE=${DYNAMODB_TABLE:-Marcaciones}
+      - BACKEND_HOST=127.0.0.1
+      - BACKEND_PORT=8000
