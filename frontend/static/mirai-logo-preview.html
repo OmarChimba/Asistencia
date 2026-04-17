@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MirAI Logo - Preview por Empresa</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            gap: 2rem;
+        }
+        h1 { color: #334155; font-size: 1.5rem; }
+        .selector {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .selector button {
+            padding: 12px 28px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        .selector button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .selector button.active { color: white; border-color: transparent; }
+        .btn-pvf { --c: #285d2f; }
+        .btn-pvf.active { background: #285d2f; }
+        .btn-ntg { --c: #712d7d; }
+        .btn-ntg.active { background: #712d7d; }
+        .btn-pcg { --c: #0056b3; }
+        .btn-pcg.active { background: #0056b3; }
+
+        .preview-container {
+            display: flex;
+            gap: 3rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .preview-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.4s ease;
+        }
+        .preview-card h3 { color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Logo grande */
+        .logo-grande svg { width: 200px; height: auto; }
+        /* Logo topbar (como se ve en el dashboard) */
+        .logo-topbar {
+            background: rgba(248,250,252,0.9);
+            border-radius: 16px;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .logo-topbar svg { width: 50px; height: 50px; }
+        .logo-topbar .company-name {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary, #285d2f);
+            transition: color 0.4s ease;
+        }
+        .logo-topbar .badge {
+            font-size: 0.75rem;
+            background: rgba(0,0,0,0.05);
+            padding: 4px 12px;
+            border-radius: 20px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* SVG styles */
+        .triangulo {
+            fill: none;
+            stroke: var(--primary, #285d2f);
+            stroke-width: 14;
+            stroke-linejoin: round;
+            transition: stroke 0.4s ease;
+        }
+        .circuito-linea {
+            fill: none;
+            stroke: var(--primary, #285d2f);
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke 0.4s ease;
+        }
+        .circuito-anillo {
+            fill: #ffffff;
+            stroke: var(--primary, #285d2f);
+            stroke-width: 4;
+            transition: stroke 0.4s ease;
+        }
+        .texto-mir {
+            fill: var(--primary, #285d2f);
+            font-size: 90px;
+            font-weight: 900;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            transition: fill 0.4s ease;
+        }
+        .texto-ai {
+            fill: var(--accent, #75c900);
+            font-size: 90px;
+            font-weight: 900;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            opacity: 0.8;
+            transition: fill 0.4s ease;
+        }
+
+        /* Animación circuito */
+        .circuito-linea {
+            stroke-dasharray: 200;
+            stroke-dashoffset: 200;
+            animation: drawCircuit 2s ease forwards;
+        }
+        .circuito-anillo {
+            opacity: 0;
+            animation: fadeIn 0.5s ease 1.5s forwards;
+        }
+        @keyframes drawCircuit {
+            to { stroke-dashoffset: 0; }
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .empresa-label {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            transition: color 0.4s ease;
+        }
+    </style>
+</head>
+<body>
+    <h1>MirAI Logo - Colores por Empresa</h1>
+
+    <div class="selector">
+        <button class="btn-pvf active" onclick="cambiarEmpresa('PVF')">🟢 Provefrut</button>
+        <button class="btn-ntg" onclick="cambiarEmpresa('NTG')">🟣 Nintanga</button>
+        <button class="btn-pcg" onclick="cambiarEmpresa('PCG')">🔵 Procongelados</button>
+    </div>
+
+    <p class="empresa-label" id="empresa-label">Provefrut S.A.</p>
+
+    <div class="preview-container">
+        <!-- Logo Grande -->
+        <div class="preview-card logo-grande">
+            <h3>Logo Principal</h3>
+            <svg viewBox="0 0 350 320" role="img" aria-label="Logo MirAI">
+                <path class="circuito-linea" d="M115,155 L155,155 L180,130" />
+                <circle class="circuito-anillo" cx="180" cy="130" r="8" />
+                <path class="circuito-linea" d="M90,195 L155,195 L180,170 L215,170" />
+                <circle class="circuito-anillo" cx="215" cy="170" r="8" />
+                <path class="triangulo" d="M175,40 L275,220 L75,220 Z" />
+                <text x="55" y="300" class="texto-mir">Mir</text>
+                <text x="218" y="300" class="texto-ai">AI</text>
+            </svg>
+        </div>
+
+        <!-- Logo Topbar -->
+        <div class="preview-card">
+            <h3>Vista Topbar (Dashboard)</h3>
+            <div class="logo-topbar">
+                <svg viewBox="0 0 350 320" role="img" aria-label="Logo MirAI">
+                    <path class="circuito-linea" d="M115,155 L155,155 L180,130" />
+                    <circle class="circuito-anillo" cx="180" cy="130" r="8" />
+                    <path class="circuito-linea" d="M90,195 L155,195 L180,170 L215,170" />
+                    <circle class="circuito-anillo" cx="215" cy="170" r="8" />
+                    <path class="triangulo" d="M175,40 L275,220 L75,220 Z" />
+                    <text x="55" y="300" class="texto-mir">Mir</text>
+                    <text x="218" y="300" class="texto-ai">AI</text>
+                </svg>
+                <div>
+                    <div class="company-name" id="company-name">Provefrut</div>
+                    <span class="badge">HUB CORPORATIVO</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const empresas = {
+            PVF: { nombre: 'Provefrut',      full: 'Provefrut S.A.',      primary: '#285d2f', accent: '#75c900' },
+            NTG: { nombre: 'Nintanga',        full: 'Nintanga S.A.',       primary: '#712d7d', accent: '#b366c9' },
+            PCG: { nombre: 'Procongelados',   full: 'Procongelados S.A.', primary: '#0056b3', accent: '#4a90e2' },
+        };
+
+        function cambiarEmpresa(codigo) {
+            const emp = empresas[codigo];
+
+            // Cambiar CSS variables
+            document.documentElement.style.setProperty('--primary', emp.primary);
+            document.documentElement.style.setProperty('--accent', emp.accent);
+
+            // Actualizar textos
+            document.getElementById('company-name').textContent = emp.nombre;
+            document.getElementById('empresa-label').textContent = emp.full;
+
+            // Actualizar botones activos
+            document.querySelectorAll('.selector button').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.btn-${codigo.toLowerCase()}`).classList.add('active');
+
+            // Re-animar circuitos
+            document.querySelectorAll('.circuito-linea').forEach(el => {
+                el.style.animation = 'none';
+                el.offsetHeight;
+                el.style.animation = '';
+            });
+            document.querySelectorAll('.circuito-anillo').forEach(el => {
+                el.style.animation = 'none';
+                el.offsetHeight;
+                el.style.animation = '';
+            });
+        }
+    </script>
+</body>
+</html>

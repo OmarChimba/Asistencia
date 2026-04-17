@@ -65,12 +65,7 @@ def get_tab(record: dict, keywords: list[str]) -> str | None:
             return kw
     return None
 
-_dynamodb = boto3.resource(
-    'dynamodb',
-    region_name=AWS_REGION,
-    aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-)
+_dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION)
 _table = _dynamodb.Table(DYNAMODB_TABLE)
 
 
@@ -169,6 +164,15 @@ def debug_grupos(current_user: dict = Depends(get_current_user)):
 
 
 # ── Entry point ──────────────────────────────────────────────────────────
-from mangum import Mangum
-handler = Mangum(app, lifespan="off")
+import asyncio
+try:
+    asyncio.get_event_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
+
+try:
+    from mangum import Mangum
+    handler = Mangum(app, lifespan="off")
+except ImportError:
+    handler = None
 

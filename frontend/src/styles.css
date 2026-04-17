@@ -2,15 +2,15 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  background: #f0f4f8;
+  font-family: 'Open Sans', 'Segoe UI', system-ui, sans-serif;
+  background: #f5f5f5;
   color: #1e293b;
   min-height: 100vh;
 }
 
 /* ── Header ── */
 .app-header {
-  background: linear-gradient(135deg, #bf20d7 0%, #b62bd8 100%);
+  background: linear-gradient(135deg, #712d7d 0%, #470062 100%);
   color: #fff;
   padding: 16px 20px;
   display: flex;
@@ -18,7 +18,7 @@ body {
   gap: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,.2);
 }
-.app-header svg { flex-shrink: 0; width: 28px; height: 28px; }
+.header-logo { height: 40px; width: auto; flex-shrink: 0; }
 .app-header h1 { font-size: 1.15rem; font-weight: 700; line-height: 1.2; }
 .app-header p  { font-size: .78rem; opacity: .85; margin-top: 2px; }
 
@@ -34,7 +34,7 @@ body {
 .spinner {
   width: 44px; height: 44px;
   border: 4px solid #e2e8f0;
-  border-top-color: #aa0fcd;
+  border-top-color: #712d7d;
   border-radius: 50%;
   animation: spin .8s linear infinite;
 }
@@ -57,12 +57,9 @@ body {
   box-shadow: 0 4px 24px rgba(0,0,0,.1);
   text-align: center;
 }
-.login-card .icon {
-  width: 60px; height: 60px;
-  background: #fdf4ff;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 18px;
+.login-logo {
+  width: 160px; height: auto;
+  display: block; margin: 0 auto 20px;
 }
 .login-card h2    { font-size: 1.2rem; margin-bottom: 6px; }
 .login-card .subtitle { font-size: .88rem; color: #64748b; margin-bottom: 24px; }
@@ -88,18 +85,18 @@ body {
   background: #fff;
 }
 .form-group input:focus {
-  border-color: #bd30eb;
-  box-shadow: 0 0 0 3px rgba(189,48,235,.1);
+  border-color: #712d7d;
+  box-shadow: 0 0 0 3px rgba(113,45,125,.1);
 }
 
 .btn-primary {
   margin-top: 8px; width: 100%;
   padding: 12px; border: none; border-radius: 8px;
-  background: #aa0fcd; color: #fff;
+  background: #712d7d; color: #fff;
   font-size: 1rem; font-weight: 600;
   cursor: pointer; transition: background .2s;
 }
-.btn-primary:hover:not(:disabled) { background: #b017ec; }
+.btn-primary:hover:not(:disabled) { background: #5a2265; }
 .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
 
 .login-error {
@@ -122,7 +119,7 @@ body {
 
 .user-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  background: #7c3aed; color: #fff;
+  background: #712d7d; color: #fff;
   border-radius: 999px; padding: 6px 14px;
   font-size: .82rem; font-weight: 600;
   max-width: 100%; overflow: hidden;
@@ -130,7 +127,7 @@ body {
 }
 .admin-chip {
   display: inline-flex; align-items: center;
-  background: #7c3aed; color: #fff;
+  background: #712d7d; color: #fff;
   border-radius: 999px; padding: 4px 10px;
   font-size: .72rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: .06em;
@@ -180,8 +177,8 @@ body {
   text-transform: capitalize;
   white-space: nowrap;
 }
-.tab-btn:hover  { color: #aa0fcd; }
-.tab-btn.active { color: #aa0fcd; border-bottom-color: #aa0fcd; }
+.tab-btn:hover  { color: #712d7d; }
+.tab-btn.active { color: #712d7d; border-bottom-color: #712d7d; }
 
 /* ── Admin filter ── */
 .admin-filter-bar {
@@ -205,7 +202,7 @@ body {
   cursor: pointer; flex: 1; min-width: 160px;
   transition: border-color .2s;
 }
-.filter-select:focus { border-color: #aa0fcd; }
+.filter-select:focus { border-color: #712d7d; }
 .filter-count {
   font-size: .8rem; color: #64748b;
   background: #f1f5f9; border-radius: 999px;
@@ -223,7 +220,7 @@ body {
   background: #fff; border-radius: 12px;
   padding: 16px;
   box-shadow: 0 1px 4px rgba(0,0,0,.07);
-  border-left: 4px solid #aa0fcd;
+  border-left: 4px solid #712d7d;
 }
 .stat-card.green  { border-left-color: #22c55e; }
 .stat-card.orange { border-left-color: #f97316; }
@@ -255,7 +252,7 @@ body {
   transition: border-color .2s;
   width: 100%; flex: 1; min-width: 140px;
 }
-.search-input:focus { border-color: #aa0fcd; }
+.search-input:focus { border-color: #712d7d; }
 
 /* Tabla con scroll horizontal en móvil */
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -312,7 +309,7 @@ tbody td { padding: 11px 14px; }
 /* Tablet (768px+) */
 @media (min-width: 768px) {
   .app-header { padding: 20px 32px; }
-  .app-header svg { width: 36px; height: 36px; }
+  .header-logo { height: 50px; }
   .app-header h1 { font-size: 1.4rem; }
   .app-header p  { font-size: .85rem; }
 

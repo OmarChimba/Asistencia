@@ -1,0 +1,267 @@
+/* ===================================================
+   MANUAL DE MARCA CORPORATIVO (CSS)
+   Marcas: Provefrut, Procongelados, Nintanga
+   Versión: FINAL
+   =================================================== */
+
+/* ===================================================
+   1. IMPORTACIÓN DE FUENTES (TIPOGRAFÍA)
+   ===================================================
+   Se importa la familia "Open Sans", que es la fuente base
+   para el stack --font-family-sans.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+/* ===================================================
+   2. :ROOT (VARIABLES GLOBALES UNIVERSALES)
+   ===================================================
+   Estos son los valores por defecto que se aplican a TODAS
+   las marcas. Son la base de la UI.
+*/
+:root {
+    /* 2.1 Fuente Universal (Como se solicitó) */
+    /* Este stack se usará para TUDO: párrafos, títulos, botones. */
+    --font-family-sans: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    
+    /* 2.2 Escala de Tipografía (Base) */
+    --font-size-h1: 2.25rem; /* 36px */
+    --font-size-h2: 1.75rem; /* 28px */
+    --font-size-h3: 1.25rem; /* 20px */
+    --font-size-body: 1rem;   /* 16px */
+    --font-size-small: 0.875rem;/* 14px */
+    
+    /* 2.3 Neutros Universales (Escala de Grises) */
+    /* Se extraen del código fuente de Procongelados (Bootstrap) */
+    --color-text-primary: #212529;   /* color: #212529 (body) */
+    --color-text-secondary: #666666; /* color: #666 (body) */
+    --color-border: #E0E0E0;         /* Estándar para bordes de inputs y cards */
+    --color-bg-light: #f5f5f5;       /* Estándar para fondos de sección claros */
+    --color-bg-white: #ffffff;
+    --color-black: #000000;
+    
+    /* 2.4 Semánticos Universales (Alertas) */
+    /* Colores estándar para mensajes de usuario */
+    --color-success: #28a745;
+    --color-danger: #dc3545;
+    --color-warning: #ffc107;
+    --color-info: #17a2b8;
+}
+
+/* ===================================================
+   3. DEFINICIÓN DE TEMAS (PALETAS DE MARCA)
+   ===================================================
+   Aquí se sobrescriben las variables para cada marca.
+   El programador solo necesita añadir la clase (ej. "provefrut-theme")
+   al <body> para cambiar el tema de toda la app.
+*/
+
+/* --- TEMA 1: PROVEFRUT --- */
+.provefrut-theme {
+    --color-primary: #285d2f;         /* Verde Títulos */
+    --color-on-primary: var(--color-bg-white); /* Color de texto sobre el primario */
+    --color-accent: #78b21f;          /* Verde Brillante "Nuestro" */
+    --color-on-accent: var(--color-bg-white);
+    --color-accent-2: #cfa761;        /* Dorado (Timeline) */
+    --color-on-accent-2: var(--color-black);
+    --color-bg-dark: #053905;         /* Verde Footer */
+    --color-bg-theme-light: #e9e8e3; /* Fondo de sección de timeline */
+}
+
+/* --- TEMA 2: PROCONGELADOS (CORREGIDO) --- */
+.procongelados-theme {
+    --color-primary: #2e247a;         /* Azul Navy (Títulos, Footer) */
+    --color-on-primary: var(--color-bg-white);
+    --color-accent: #019ee3;          /* Azul Brillante (Fondo "Calidad") */
+    --color-on-accent: var(--color-bg-white);
+    --color-accent-2: #007bff;        /* Azul Bootstrap (de tu :root) */
+    --color-on-accent-2: var(--color-bg-white);
+    --color-bg-dark: #343a40;         /* Gris Oscuro (de tu :root --gray-dark) */
+    --color-bg-theme-light: #efefef;  /* Fondo Misión/Visión */
+}
+
+/* --- TEMA 3: NINTANGA --- */
+.nintanga-theme {
+    --color-primary: #712d7d;         /* Púrpura Principal */
+    --color-on-primary: var(--color-bg-white);
+    --color-accent: #ea64a5;          /* Rosa (Slider) */
+    --color-on-accent: var(--color-bg-white);
+    --color-accent-2: #c66ba9;        /* Rosa (Separadores) */
+    --color-on-accent-2: var(--color-bg-white);
+    --color-bg-dark: #470062;         /* Púrpura Oscuro (Footer) */
+    --color-bg-theme-light: #f5f5f5;  /* Gris claro estándar */      
+}
+
+/* ===================================================
+   4. ESTILOS GLOBALES DE LA GUÍA (Base)
+   ===================================================
+   Estos son los estilos base que se aplican a la aplicación.
+   Usan las variables universales y de tema.
+*/
+body {
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-body);
+    color: var(--color-text-secondary); 
+    background-color: #f0f2f5; 
+    line-height: 1.6;
+    margin: 0;
+    padding: 2rem;
+}
+
+/* --- 4.1 Tipografía Base --- */
+/* Todos los títulos usarán la fuente universal */
+h1, h2, h3, h4 {
+    font-family: var(--font-family-sans);
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+h1 { font-size: 2.5rem; text-align: center; color: #000; margin-bottom: 2rem; }
+h2 { font-size: var(--font-size-h2); margin-top: 2.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem; color: var(--color-primary); } /* Color del tema */
+h3 { font-size: var(--font-size-h3); margin-top: 2rem; margin-bottom: 1rem; }
+h4 { font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+
+p { margin-bottom: 1rem; }
+a { color: var(--color-primary); text-decoration: none; } /* Enlaces con color del tema */
+a:hover { text-decoration: underline; }
+small { font-size: var(--font-size-small); color: var(--color-text-secondary); }
+
+/* --- 4.2 Estilos del Manual (Visual) --- */
+/* (Estos estilos son para que la guía se vea bien) */
+.container {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 1.5rem 2rem;
+    background: var(--color-bg-white);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-top: 5px solid var(--color-primary); 
+}
+.component-sandbox {
+    padding: 1.5rem;
+    background: var(--color-bg-theme-light);
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+}
+
+/* ===================================================
+   5. ESTILOS DE COMPONENTES BASE (El "Framework")
+   ===================================================
+   Estas son las clases que los programadores usarán.
+*/
+
+/* --- 5.1 Swatches de Color (Para el Manual) --- */
+.color-palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+.color-swatch { border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.color-swatch-box { height: 100px; }
+.color-swatch-info { padding: 0.75rem; background: var(--color-bg-white); }
+.color-swatch-info strong { display: block; color: var(--color-text-primary); }
+.color-swatch-info span { font-family: monospace; font-size: var(--font-size-small); color: var(--color-text-secondary); }
+
+/* --- 5.2 Botones (Tematizados) --- */
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-size: var(--font-size-body);
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+    margin-right: 0.5rem;
+    font-family: var(--font-family-sans); 
+}
+
+.btn-primary { background-color: var(--color-primary); color: var(--color-on-primary); border-color: var(--color-primary); }
+.btn-primary:hover { opacity: 0.85; }
+.btn-secondary { background-color: var(--color-accent); color: var(--color-on-accent); border-color: var(--color-accent); }
+.btn-secondary:hover { opacity: 0.85; }
+.btn-danger { background-color: var(--color-danger); color: var(--color-bg-white); }
+.btn-danger:hover { opacity: 0.85; }
+
+/* --- 5.3 Alertas (Universales) --- */
+.alert { padding: 1rem; margin-bottom: 1rem; border-radius: 6px; border: 1px solid; font-weight: 500; }
+.alert-success { background-color: #f0fff4; border-color: var(--color-success); color: var(--color-success); }
+.alert-danger { background-color: #fff0f0; border-color: var(--color-danger); color: var(--color-danger); }
+.alert-warning { background-color: #fffaf0; border-color: var(--color-warning); color: #b8860b; }
+.alert-info { background-color: #f0faff; border-color: var(--color-info); color: var(--color-info); }
+
+/* --- 5.4 Formularios (Tematizados) --- */
+.form-group { margin-bottom: 1rem; }
+.form-label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--color-text-primary); }
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    font-size: var(--font-size-body);
+    font-family: var(--font-family-sans); 
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    box-sizing: border-box; 
+}
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+
+/* --- 5.5 Tarjetas (Cards) (Tematizadas) --- */
+.card { background: var(--color-bg-white); border: 1px solid var(--color-border); border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
+.card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-h3);
+    font-weight: 700; 
+    color: var(--color-primary);
+}
+.card-body { padding: 1.5rem; }
+.card-footer { padding: 1rem 1.5rem; background: var(--color-bg-theme-light); border-top: 1px solid var(--color-border); }
+
+
+/* ===================================================
+   6. REGLAS RESPONSIVAS (MEDIA QUERIES)
+   ===================================================
+   Esta es la sección que te interesaba.
+   Son las "etiquetas" que cambian el diseño según el 
+   tamaño de la pantalla.
+   
+   La estrategia es "Mobile-First":
+   1. Los estilos de arriba (Secciones 4 y 5) son para MÓVIL.
+   2. Estas reglas @media AÑADEN o MODIFICAN estilos
+      para pantallas MÁS GRANDES.
+*/
+
+/* BREAKPOINT 1: Tablets
+  (min-width: 768px) significa "Desde 768px de ancho hacia arriba"
+*/
+@media (min-width: 768px) {
+    
+    /* Ejemplo: En móvil, las paletas de colores se apilan.
+      En tablet, las mostramos en 3 columnas.
+    */
+    .color-palette {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* BREAKPOINT 2: Desktops
+  (min-width: 1024px) significa "Desde 1024px de ancho hacia arriba"
+*/
+@media (min-width: 1024px) {
+
+    /* Ejemplo: En desktop, mostramos las paletas de colores
+      en 5 columnas para aprovechar el espacio.
+    */
+    .color-palette {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    /* Ejemplo: Hacemos el título principal un poco más grande
+      solo en pantallas de escritorio.
+    */
+    h1 {
+        font-size: 3rem; /* 48px */
+    }
+}

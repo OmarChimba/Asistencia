@@ -2,33 +2,42 @@
 # Ejecutar desde la raiz del proyecto: .\lambda-deploy\build.ps1
 $ErrorActionPreference = "Stop"
 
-$Root       = Split-Path $PSScriptRoot
+$Root        = Split-Path $PSScriptRoot
 $BackendPath = "$Root\backend"
-$PackageDir  = "$PSScriptRoot\package"
 $ZipPath     = "$PSScriptRoot\lambda-function.zip"
+$ScriptPath  = "$PSScriptRoot\build_in_docker.sh"
 
-Write-Host "Limpiando paquete anterior..."
-if (Test-Path $PackageDir) { Remove-Item $PackageDir -Recurse -Force }
-New-Item -ItemType Directory -Path $PackageDir | Out-Null
+# Script que corre dentro del contenedor Linux
+@'
+#!/bin/bash
+set -e
+pip install -r /src/requirements.txt -t /tmp/pkg --no-cache-dir -q
+cp /src/app.py /src/config.py /tmp/pkg/
+cd /tmp/pkg
+python3 - <<'PYEOF'
+import zipfile, os
+with zipfile.ZipFile('/out/lambda-function.zip', 'w', zipfile.ZIP_DEFLATED) as z:
+    for root, dirs, files in os.walk('.'):
+        dirs[:] = [d for d in dirs if '__pycache__' not in d]
+        for f in files:
+            if not f.endswith('.pyc'):
+                z.write(os.path.join(root, f))
+print('ZIP creado correctamente')
+PYEOF
+'@ | Set-Content $ScriptPath -Encoding UTF8
 
-Write-Host "Instalando dependencias con Amazon Linux 2023 (Python 3.12)..."
-docker run --rm `
-  --entrypoint pip `
-  -v "${BackendPath}:/src" `
-  -v "${PackageDir}:/out" `
-  public.ecr.aws/lambda/python:3.12 `
-  install -r /src/requirements.txt -t /out --no-cache-dir
-
-Write-Host "Copiando codigo fuente..."
-Copy-Item "$BackendPath\app.py"    "$PackageDir\"
-Copy-Item "$BackendPath\config.py" "$PackageDir\"
-
-Write-Host "Creando ZIP..."
+Write-Host "Construyendo dentro de Amazon Linux 2023 (Python 3.14)..."
 if (Test-Path $ZipPath) { Remove-Item $ZipPath }
-Compress-Archive -Path "$PackageDir\*" -DestinationPath $ZipPath
+
+docker run --rm `
+  --entrypoint /bin/bash `
+  -v "${BackendPath}:/src" `
+  -v "${PSScriptRoot}:/out" `
+  public.ecr.aws/lambda/python:3.14 `
+  /out/build_in_docker.sh
 
 $size = [math]::Round((Get-Item $ZipPath).Length / 1MB, 1)
 Write-Host ""
 Write-Host "Paquete listo: $ZipPath ($size MB)"
-Write-Host "  Runtime: Python 3.12"
+Write-Host "  Runtime: Python 3.14"
 Write-Host "  Handler: app.handler"
