@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
-      - API_ASISTENCIA_URL=${API_ASISTENCIA_URL}
+      - API_ASISTENCIA_URL=http://172.20.4.59:1000/api/cargar-asistencia/
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION:-us-east-1}
