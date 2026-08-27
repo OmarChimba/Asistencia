@@ -8,7 +8,7 @@ $ZipPath     = "$PSScriptRoot\lambda-function.zip"
 $ScriptPath  = "$PSScriptRoot\build_in_docker.sh"
 
 # Script que corre dentro del contenedor Linux
-@'
+$BuildScript = @'
 #!/bin/bash
 set -e
 pip install -r /src/requirements.txt -t /tmp/pkg --no-cache-dir -q
@@ -24,7 +24,9 @@ with zipfile.ZipFile('/out/lambda-function.zip', 'w', zipfile.ZIP_DEFLATED) as z
                 z.write(os.path.join(root, f))
 print('ZIP creado correctamente')
 PYEOF
-'@ | Set-Content $ScriptPath -Encoding UTF8
+'@ -replace "`r`n", "`n"
+
+[System.IO.File]::WriteAllText($ScriptPath, $BuildScript, (New-Object System.Text.UTF8Encoding $false))
 
 Write-Host "Construyendo dentro de Amazon Linux 2023 (Python 3.14)..."
 if (Test-Path $ZipPath) { Remove-Item $ZipPath }

@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 set -e
 pip install -r /src/requirements.txt -t /tmp/pkg --no-cache-dir -q
 cp /src/app.py /src/config.py /tmp/pkg/

@@ -98,6 +98,20 @@ USERS = {
         'grupos':   ['GUAY'],
         'is_admin': False, 
     },
+     'maribel.llumiquinga@nintanga.com.ec': {
+            'password': 'Sanfrancisco-2026',
+            'nombre':   'Maribel Llumiquinga',
+            'grupos':   ['FRAN'],
+            'is_admin': False,
+    },
+
+     'deysi.molina@nintanga.com.ec': {
+                'password': 'Sanpatricio-2026',
+                'nombre':   'Deysi Molina',
+                'grupos':   ['PATR','CAR'],
+                'is_admin': False,
+        },
+
     'pchimba@provefrut.com': {
         'password': 'Peter-2026',
         'nombre':   'Omar Chimba',
@@ -110,4 +124,11 @@ USERS = {
         'grupos':   [],
         'is_admin': True,
     },
+    'andres.montenegro@procongelados.com': {
+        'password': 'Asistencia-2026',
+        'nombre':   'Andres Montenegro',
+        'grupos':   [],
+        'is_admin': True,
+    },
+
 }
