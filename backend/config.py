@@ -77,7 +77,7 @@ USERS = {
     'nelson.garcia@nintanga.com.ec': {
         'password': 'Salfonso-2026',
         'nombre':   'Nelson García',
-        'grupos':   ['ALFON'],
+        'grupos':   ['ALFON','SANB'],
         'is_admin': False,
     },
     'jhonatan.curicho@nintanga.com.ec': {
