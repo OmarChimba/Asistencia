@@ -34,7 +34,9 @@
       "Bash(powershell.exe -Command \"Get-Process -Id \\(Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue\\).OwningProcess -ErrorAction SilentlyContinue | Select-Object Id, ProcessName\")",
       "Bash(powershell.exe -Command \"Stop-Process -Id 23732 -Force\")",
       "Bash(start \"Backend FastAPI\" cmd /k \"..\\\\backend\\\\venv\\\\Scripts\\\\activate && uvicorn app:app --reload --port 8000\")",
-      "Bash(../backend/venv/Scripts/uvicorn app:app --port 8000)"
+      "Bash(../backend/venv/Scripts/uvicorn app:app --port 8000)",
+      "PowerShell(Start-Process powershell -Verb RunAs -ArgumentList '-NoExit', '-Command', 'cd \"C:\\\\Users\\\\pchimba\\\\Documents\\\\Asistencia\\\\actualizacion-datos\"; docker compose down; docker compose up --build -d; docker compose logs --tail=25' -PassThru 2>&1)",
+      "Bash(git clone *)"
     ]
   }
 }
