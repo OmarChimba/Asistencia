@@ -1,17 +1,8 @@
 # ══════════════════════════════════════════════════════════════
-#  Stage 1 — Build frontend React
-# ══════════════════════════════════════════════════════════════
-FROM node:20-slim AS frontend-build
-
-WORKDIR /frontend
-COPY frontend/package*.json ./
-RUN npm install --legacy-peer-deps
-COPY frontend/ ./
-RUN npm run build
-
-
-# ══════════════════════════════════════════════════════════════
-#  Stage 2 — Imagen de producción: nginx + FastAPI
+#  Imagen de producción: nginx + FastAPI
+#  El frontend se compila ANTES en el host (cd frontend && npm run build)
+#  porque npm no puede descargar paquetes dentro de Docker en esta red
+#  (proxy con certificado autofirmado). Se copia frontend/dist.
 # ══════════════════════════════════════════════════════════════
 FROM python:3.12-slim
 
@@ -27,7 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ .
 
 # ── Frontend (archivos estáticos del build) ───────────────────
-COPY --from=frontend-build /frontend/dist /usr/share/nginx/html
+COPY frontend/dist /usr/share/nginx/html
 
 # ── Configuraciones ───────────────────────────────────────────
 COPY Asistencia-app/nginx.conf        /etc/nginx/nginx.conf
