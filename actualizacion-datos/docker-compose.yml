@@ -10,3 +10,4 @@ services:
       - AWS_REGION=${AWS_REGION:-us-east-1}
       - DYNAMODB_TABLE=${DYNAMODB_TABLE:-Marcaciones}
       - POLL_SEGUNDOS=${POLL_SEGUNDOS:-30}
+      - TZ=America/Guayaquil

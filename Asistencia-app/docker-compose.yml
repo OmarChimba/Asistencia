@@ -14,3 +14,4 @@ services:
       - DYNAMODB_TABLE=${DYNAMODB_TABLE:-Marcaciones}
       - BACKEND_HOST=127.0.0.1
       - BACKEND_PORT=8000
+      - TZ=America/Guayaquil
